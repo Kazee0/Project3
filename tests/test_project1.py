@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+import project1
 from IO_file import read_instructions_from_file
 from conflicts import find_conflict
 
@@ -24,6 +25,25 @@ class MyTestCase(unittest.TestCase):
             '10':['CANCEL 1 OH 10']
         }
         self.assertEqual(find_conflict(text_input), text_output)
+    def test_situation_object(self):
+        """Test for the function of situation."""
+        inst = project1.situation('CANCEL', 'Trouble')
+        self.assertEqual(inst.type, 'CANCEL')
+        self.assertEqual(inst.msg, 'Trouble')
+    def test_DEVICE(self):
+        """Test device instance created as expected."""
+        device_1 = project1.DEVICE(1)
+        self.assertEqual(device_1.show_id(), 1)
+        self.assertEqual(device_1.situation, [])
+    def test_PRO(self):
+        """Test the propagate instance created."""
+        pro = project1.PROPAGATE(0, 'ALERT', 1, 2)
+        self.assertEqual(pro.type, 'ALERT')
+        self.assertEqual(pro.time, 0)
+        self.assertEqual(pro.from_ID, 1)
+        self.assertEqual(pro.to_ID, 2)
+
+
 
 
 if __name__ == '__main__':
