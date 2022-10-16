@@ -1,4 +1,6 @@
 from pathlib import Path
+from IO_file import read_instructions_from_file
+from conflicts import find_conflict
 import sys
 
 class situation:
@@ -99,6 +101,39 @@ def create_DEVICE(inst: list[str]) -> tuple[list[DEVICE], int]:
             device.append(DEVICE(int(inst[i].split()[1])))
             inst_log += 1
     return device, inst_log
+
+def running_program(inst: list[str]):
+    time_counter = 0
+    temp = []
+    time_to_do = 0
+    x = None
+    other_instruction = find_conflict(inst)
+    device, inst_log = create_DEVICE(inst)
+    while True:
+        #Process Propagation
+        device, temp = check_if_PROPAGATE(temp, time_counter, device)
+        try:
+            time_to_do = time_counter
+            if inst[inst_log].split(' ')[0] == 'PROPAGATE':
+                #Send cancel/alert to the receiving device.
+                print("sending message")
+                org = inst[inst_log].split(' ')[1]
+                dest = inst[inst_log].split(' ')[2]
+                time_to_do = time_counter + int(inst[inst_log].split(' ')[-1])
+                for z in device:
+                    if z.show_id() == int(org):
+                        x = z.situation
+                l1 = PROPAGATE(time_to_do,x,int(org),int(dest))
+                for d in x:
+                    if d.type == 'CANCEL':
+                        print("@{} #{}: SENT CANCELLATION TO #{}: {}".format(time_counter, org, dest, d.msg))
+                    if d.type == 'ALERT':
+                        print(
+                            "@{} #{}: SENT ALERT TO #{}: {}".format(time_counter, org, dest, d.msg))
+                temp.append(l1)
+                inst_log +=1
+        except IndexError:
+            pass
 
 
 def main() -> None:
