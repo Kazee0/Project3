@@ -57,6 +57,21 @@ def _read_input_file_path() -> Path:
     """Reads the input file path from the standard input"""
     return Path(input())
 
+def create_DEVICE(inst: list[str]) -> tuple[list[DEVICE], int]:
+    """Takes in instructions and finds all that creates a device.
+    Create the DEVICE instance using the instructions.
+
+    Returns:
+        the list of devices and the log of instructions carried.
+    """
+    device = []
+    inst_log = 0
+    for i in range(len(inst)):
+        if inst[i].split(' ')[0] == 'DEVICE':
+            device.append(DEVICE(int(inst[i].split()[1])))
+            inst_log += 1
+    return device, inst_log
+
 
 def main() -> None:
     """Runs the simulation program in its entirety"""

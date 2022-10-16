@@ -55,7 +55,15 @@ class MyTestCase(unittest.TestCase):
         #Testing if program can store the cancel instruction
         self.assertEqual(pro.situation[0].type, 'CANCEL')
         self.assertEqual(pro.situation[0].msg, 'ANOTHER HELP')
-
+    def test_creation_devices(self):
+        text_input=[
+            'DEVICE 1',
+            'DEVICE 22'
+        ]
+        out = project1.create_DEVICE(text_input)
+        self.assertEqual(2, out[-1])
+        self.assertEqual(1, out[0][0]._ID)
+        self.assertEqual(22, out[0][1]._ID)
 
 
 
