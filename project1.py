@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import sys
 
 class situation:
     """Contain situation to store
@@ -57,7 +57,7 @@ def _read_input_file_path() -> Path:
     """Reads the input file path from the standard input"""
     return Path(input())
 
-def check_if_PROPAGATE(temp, time_counter, device):
+def check_if_PROPAGATE(temp: list[PROPAGATE], time_counter: int, device:list[DEVICE]) -> (list[DEVICE], list[PROPAGATE]):
     """Function that handles the propagate instruction and check if it needs to process"""
     x = None
     if temp:
@@ -82,7 +82,7 @@ def check_if_PROPAGATE(temp, time_counter, device):
                                     time_counter, device_to, device_from, s.msg))
                 temp.remove(i)
         if not temp:
-            exit()
+            sys.exit()
     return device, temp
 
 def create_DEVICE(inst: list[str]) -> tuple[list[DEVICE], int]:
