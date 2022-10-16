@@ -153,12 +153,138 @@ def running_program(inst: list[str]):
             if len(to_do) == 1:
                 inst_log += 1
                 device = only_one_instruction(to_do, device)
+            if len(to_do) > 1:
+                inst_log += len(to_do)
+                # Mutiple actions at the same time.
+                if to_do[0].split(' ')[0] == 'CANCEL' and to_do[1].split(' ')[0] == 'ALERT':
+                    if int(to_do[0].split(' ')[1]) == int(to_do[1].split(' ')[1]):
+                        # Two instructions sent to same DEVICE
+                        if to_do[0].split(' ')[-2] == to_do[1].split(' ')[-2]:
+                            # Same message
+                            pass
+                        else:
+                            for z in device:
+                                if z.show_id() == int(to_do[0].split(' ')[1]):
+                                    print('CANCEL')
+                                    z.handle_cancel(to_do[0].split(' ')[-2])
+                                    con = situation('ALERT', to_do[1].split(' ')[2])
+                                    z.add_situation(con)
+                    else:
+                        for z in device:
+                            if z.show_id() == int(to_do[0].split(' ')[1]):
+                                print('CANCEL')
+                                z.handle_cancel(to_do[0].split(' ')[-2])
+                            if z.show_id() == int(to_do[1].split(' ')[1]):
+                                print('ALERT')
+                                con = situation('ALERT', to_do[1].split(' ')[2])
+                                z.add_situation(con)
+                                z.handle_cancel(to_do[0].split(' ')[-2])
+                elif to_do[0].split(' ')[0] == 'ALERT' and to_do[1].split(' ')[0] == 'CANCEL':
+                    if int(to_do[1].split(' ')[1]) == int(to_do[1].split(' ')[1]):
+                        # Two instructions sent to same DEVICE
+                        if to_do[1].split(' ')[-2] == to_do[1].split(' ')[-2]:
+                            # Same message
+                            inst_log += 1
+                        else:
+                            for z in device:
+                                if z.show_id() == int(to_do[1].split(' ')[1]):
+                                    print('CANCEL')
+                                    z.handle_cancel(to_do[1].split(' ')[-2])
+                                    con = situation('ALERT', to_do[0].split(' ')[2])
+                                    z.add_situation(con)
+                    else:
+                        for z in device:
+                            if z.show_id() == int(to_do[1].split(' ')[1]):
+                                print('CANCEL')
+                                z.handle_cancel(to_do[1].split(' ')[-2])
+                            if z.show_id() == int(to_do[1].split(' ')[1]):
+                                print('ALERT')
+                                con = situation('ALERT', to_do[0].split(' ')[2])
+                                z.add_situation(con)
+                                z.handle_cancel(to_do[1].split(' ')[-2])
+
+                if to_do[0].split(' ')[0] == 'ALERT' and to_do[1].split(' ')[0] == 'ALERT':
+                    print('Multiple alerts detected.')
+                    if int(to_do[0].split(' ')[1]) > int(to_do[1].split(' ')[1]):
+                        print('Greater')
+                        # Command For First Device Greater
+                        for z in device:
+                            if z.show_id() == int(to_do[1].split(' ')[1]):
+                                con = situation('ALERT', to_do[1].split(' ')[2])
+                                z.add_situation(con)
+                        for z in device:
+                            if z.show_id() == int(to_do[0].split(' ')[1]):
+                                print("ALERT")
+                                con = situation('ALERT', to_do[0].split(' ')[2])
+                                z.add_situation(con)
+                    elif int(to_do[0].split(' ')[1]) < int(to_do[1].split(' ')[1]):
+                        print('smaller')
+                        # Command For First Device Smaller
+                        for z in device:
+                            if z.show_id() == int(to_do[0].split(' ')[1]):
+                                print("ALERT")
+                                con = situation('ALERT', to_do[0].split(' ')[2])
+                                z.add_situation(con)
+                        for z in device:
+                            if z.show_id() == int(to_do[1].split(' ')[1]):
+                                print("ALERT")
+                                con = situation('ALERT', to_do[1].split(' ')[2])
+                                z.add_situation(con)
+                    elif int(to_do[0].split(' ')[1]) == int(to_do[1].split(' ')[1]):
+                        # Same id
+                        if to_do[0].split(' ')[2] < to_do[1].split(' ')[2]:
+                            for z in device:
+                                if z.show_id() == int(to_do[0].split(' ')[1]):
+                                    print("ALERT")
+                                    con = situation('ALERT', to_do[0].split(' ')[2])
+                                    z.add_situation(con)
+                                if z.show_id() == int(to_do[1].split(' ')[1]):
+                                    print("ALERT")
+                                    con = situation('ALERT', to_do[1].split(' ')[2])
+                                    z.add_situation(con)
+                        else:
+                            for z in device:
+                                if z.show_id() == int(to_do[1].split(' ')[1]):
+                                    print("ALERT")
+                                    con = situation('ALERT', to_do[1].split(' ')[2])
+                                    z.add_situation(con)
+                                if z.show_id() == int(to_do[0].split(' ')[1]):
+                                    print("ALERT")
+                                    con = situation('ALERT', to_do[0].split(' ')[2])
+                                    z.add_situation(con)
+                    inst_log += 1
+                elif to_do[0].split(' ')[0] == 'CANCEL' and to_do[1].split(' ')[0] == 'CANCEL':
+                    if to_do[1].split(' ')[2] == to_do[0].split(' ')[2]:
+                        if to_do[0].split(' ')[2] < to_do[1].split(' ')[2]:
+                            for z in device:
+                                if z.show_id() == int(to_do[0].split(' ')[1]):
+                                    print('CANCEL')
+                                    z.handle_cancel(to_do[0].split(' ')[-2])
+                                if z.show_id() == int(to_do[1].split(' ')[1]):
+                                    z.handle_cancel(to_do[1].split(' ')[-2])
+                        if to_do[0].split(' ')[2] > to_do[1].split(' ')[2]:
+                            for z in device:
+                                if z.show_id() == int(to_do[1].split(' ')[1]):
+                                    print('CANCEL')
+                                    z.handle_cancel(to_do[1].split(' ')[-2])
+                                if z.show_id() == int(to_do[0].split(' ')[1]):
+                                    z.handle_cancel(to_do[0].split(' ')[-2])
+                    else:
+                        for z in device:
+                            if z.show_id() == int(to_do[1].split(' ')[1]):
+                                print('CANCEL')
+                                z.handle_cancel(to_do[1].split(' ')[-2])
+                            if z.show_id() == int(to_do[0].split(' ')[1]):
+                                z.handle_cancel(to_do[0].split(' ')[-2])
+        time_counter += 1
 
 
 
 def main() -> None:
     """Runs the simulation program in its entirety"""
     input_file_path = _read_input_file_path()
+    inst = read_instructions_from_file(input_file_path)
+    running_program(inst)
 
 
 if __name__ == '__main__':
