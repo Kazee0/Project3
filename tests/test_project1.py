@@ -42,6 +42,19 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(pro.time, 0)
         self.assertEqual(pro.from_ID, 1)
         self.assertEqual(pro.to_ID, 2)
+    def test_alert_cancel(self):
+        """Testing the device can handle the instructions"""
+        pro = project1.DEVICE(1)
+        alert = project1.situation('ALERT', 'HELP')
+        pro.add_situation(alert)
+        self.assertEqual(pro.situation[0].type, 'ALERT')
+        self.assertEqual(pro.situation[0].msg, 'HELP')
+        pro.handle_cancel('HELP')
+        self.assertEqual(pro.situation, [])
+        pro.handle_cancel('ANOTHER HELP')
+        #Testing if program can store the cancel instruction
+        self.assertEqual(pro.situation[0].type, 'CANCEL')
+        self.assertEqual(pro.situation[0].msg, 'ANOTHER HELP')
 
 
 

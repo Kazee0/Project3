@@ -10,8 +10,6 @@ class DEVICE:
     def __init__(self, ID):
         self._ID = ID
         self.situation = []
-    def propagate(self,from_ID, to_ID, time):
-        pass
     def add_situation(self, sit):
         self.situation.append(sit)
     def show_id(self):
