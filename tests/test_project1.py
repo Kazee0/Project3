@@ -93,6 +93,12 @@ class MyTestCase(unittest.TestCase):
         situation_out = out[0].situation[0]
         self.assertEqual(out[0].situation[0].msg, 'ABC')
         self.assertEqual(out[0].situation[0].type, 'ALERT')
+        to_do_input = ['CANCEL 1 ABC 100']
+        device_1 = project1.DEVICE(1)
+        out = project1.only_one_instruction(to_do_input, [device_1])
+        situation_out = out[0].situation[0]
+        self.assertEqual(out[0].situation[0].msg, 'ABC')
+        self.assertEqual(out[0].situation[0].type, 'CANCEL')
 
 
 
