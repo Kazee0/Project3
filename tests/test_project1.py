@@ -2,6 +2,9 @@ import unittest
 from pathlib import Path
 from IO_file import read_instructions_from_file
 from conflicts import find_conflict
+
+
+
 class MyTestCase(unittest.TestCase):
     def test_file(self):
         """Test the opening and reading of the given files."""
@@ -21,5 +24,7 @@ class MyTestCase(unittest.TestCase):
             '10':['CANCEL 1 OH 10']
         }
         self.assertEqual(find_conflict(text_input), text_output)
+
+
 if __name__ == '__main__':
     unittest.main()
