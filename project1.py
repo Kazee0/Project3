@@ -102,10 +102,23 @@ def create_DEVICE(inst: list[str]) -> tuple[list[DEVICE], int]:
             inst_log += 1
     return device, inst_log
 
+def only_one_instruction(to_do, device):
+    if to_do[0].split(' ')[0] == 'ALERT':
+        for z in device:
+            if z.show_id() == int(to_do[0].split(' ')[1]):
+                print('ALERT when single')
+                con = situation('ALERT', to_do[0].split(' ')[-2])
+                z.add_situation(con)
+    elif to_do[0].split(' ')[0] == 'CANCEL':
+        for z in device:
+            if z.show_id() == int(to_do[0].split(' ')[1]):
+                print('CANCEL when single ')
+                z.handle_cancel(to_do[0].split(' ')[-2])
+    return device
+
 def running_program(inst: list[str]):
     time_counter = 0
     temp = []
-    time_to_do = 0
     x = None
     other_instruction = find_conflict(inst)
     device, inst_log = create_DEVICE(inst)
@@ -134,6 +147,13 @@ def running_program(inst: list[str]):
                 inst_log +=1
         except IndexError:
             pass
+        if str(time_counter) in other_instruction.keys():
+            #In Which alert and cancel are processed.
+            to_do = other_instruction[str(time_counter)]
+            if len(to_do) == 1:
+                inst_log += 1
+                device = only_one_instruction(to_do, device)
+
 
 
 def main() -> None:
