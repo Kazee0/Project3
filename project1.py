@@ -57,6 +57,34 @@ def _read_input_file_path() -> Path:
     """Reads the input file path from the standard input"""
     return Path(input())
 
+def check_if_PROPAGATE(temp, time_counter, device):
+    """Function that handles the propagate instruction and check if it needs to process"""
+    x = None
+    if temp:
+        # Handel the receiving of message
+        for i in temp:
+            if i.time == time_counter:
+                device_from, device_to, situations = i.from_ID, i.to_ID, i.type
+                for s in situations:
+                    if s.type == 'ALERT':
+                        for z in device:
+                            if z.show_id() == int(device_to):
+                                z.add_situation(s)
+                                print("@{} #{}: RECEIVED ALERT FROM #{}: {}".format(time_counter,
+                                                                                    device_to,
+                                                                                    device_from,
+                                                                                    s.msg))
+                    if s.type == 'CANCEL':
+                        for z in device:
+                            if z.show_id() == int(device_to):
+                                z.handle_cancel(s.msg)
+                                print("@{} #{}: RECEIVED CANCELLATION FROM #{}: {}".format(
+                                    time_counter, device_to, device_from, s.msg))
+                temp.remove(i)
+        if not temp:
+            exit()
+    return device, temp
+
 def create_DEVICE(inst: list[str]) -> tuple[list[DEVICE], int]:
     """Takes in instructions and finds all that creates a device.
     Create the DEVICE instance using the instructions.

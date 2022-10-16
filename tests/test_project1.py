@@ -5,7 +5,6 @@ from IO_file import read_instructions_from_file
 from conflicts import find_conflict
 
 
-
 class MyTestCase(unittest.TestCase):
     def test_file(self):
         """Test the opening and reading of the given files."""
