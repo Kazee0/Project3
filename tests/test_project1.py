@@ -28,8 +28,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(find_conflict(text_input), text_output)
 
     def test_situation_object(self):
-        """Test for the function of situation."""
-        inst = project1.situation('CANCEL', 'Trouble')
+        """Test for the function of Situation."""
+        inst = project1.Situation('CANCEL', 'Trouble')
         self.assertEqual(inst.type, 'CANCEL')
         self.assertEqual(inst.msg, 'Trouble')
 
@@ -50,7 +50,7 @@ class MyTestCase(unittest.TestCase):
     def test_alert_cancel(self):
         """Testing the device can handle the instructions"""
         pro = project1.DEVICE(1)
-        alert = project1.situation('ALERT', 'HELP')
+        alert = project1.Situation('ALERT', 'HELP')
         pro.add_situation(alert)
         self.assertEqual(pro.situation[0].type, 'ALERT')
         self.assertEqual(pro.situation[0].msg, 'HELP')
@@ -67,7 +67,7 @@ class MyTestCase(unittest.TestCase):
             'DEVICE 1',
             'DEVICE 22'
         ]
-        out = project1.create_DEVICE(text_input)
+        out = project1.create_device(text_input)
         self.assertEqual(2, out[-1])
         self.assertEqual(1, out[0][0]._ID)
         self.assertEqual(22, out[0][1]._ID)
@@ -75,15 +75,15 @@ class MyTestCase(unittest.TestCase):
     def test_propagate(self):
         """Testing for receiving propagate"""
         device_1 = project1.DEVICE(1)
-        can = project1.situation('CANCEL', 'HELP')
+        can = project1.Situation('CANCEL', 'HELP')
         device_1.add_situation(can)
         device_input = [project1.DEVICE(2), device_1]
         time_input = 10
         temp_input = [project1.PROPAGATE(10, [can], 1, 2)]
         with self.assertRaises(SystemExit) as c:
-            out = project1.check_if_PROPAGATE(temp_input, time_input, device_input)
-            self.assertEqual(out[0].situation[0].msg, 'HELP')
-            self.assertEqual(out[0].situation[0].type, 'CANCEL')
+            out = project1.check_if_propagate(temp_input, time_input, device_input)
+            self.assertEqual(out[0].Situation[0].msg, 'HELP')
+            self.assertEqual(out[0].Situation[0].type, 'CANCEL')
         self.assertEqual(c.exception.code, None)
 
     def test_only_one(self):

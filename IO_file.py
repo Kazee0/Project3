@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 def read_instructions_from_file(path: Path) -> list[str]:
     """Takes input file path and returns a list of lines within the file.
     Takes in file for the given path.

@@ -3,32 +3,39 @@ from IO_file import read_instructions_from_file
 from conflicts import find_conflict
 import sys
 
-class situation:
-    """Contain situation to store
+
+class Situation:
+    """Contain Situation to store
 
     variables:
         self.type: str, can be 'CANCEL' or 'ALERT'
         self.msg: str, that contains the message of alert or cancel
     """
+
     def __init__(self, types, msg):
         self.type = types
         self.msg = msg
+
 
 class DEVICE:
     """Module of the devices
 
     functions:
-        add_situation: adding situation to device log
+        add_situation: adding Situation to device log
         show_id: returns device ID
         handle_cancel: receive the message of alert to be canceled and delete that from log
     """
+
     def __init__(self, ID):
         self._ID = ID
         self.situation = []
+
     def add_situation(self, sit):
         self.situation.append(sit)
+
     def show_id(self):
         return self._ID
+
     def handle_cancel(self, msg):
         flag = False
         for i in self.situation:
@@ -36,8 +43,9 @@ class DEVICE:
                 self.situation.remove(i)
                 flag = True
         if not flag:
-            si = situation('CANCEL', msg)
+            si = Situation('CANCEL', msg)
             self.add_situation(si)
+
 
 class PROPAGATE:
     """An module that contains the propagation
@@ -48,17 +56,21 @@ class PROPAGATE:
         self.from_ID: int that contains the ID of the sending device
         self.to_ID: int that contains the ID of receiving device
     """
+
     def __init__(self, time, types, from_ID, to_ID):
         self.type = types
         self.time = time
         self.from_ID = from_ID
         self.to_ID = to_ID
 
+
 def _read_input_file_path() -> Path:
     """Reads the input file path from the standard input"""
     return Path(input())
 
-def check_if_PROPAGATE(temp: list[PROPAGATE], time_counter: int, device:list[DEVICE]) -> (list[DEVICE], list[PROPAGATE]):
+
+def check_if_propagate(temp: list[PROPAGATE], time_counter: int, device: list[DEVICE]) -> (
+        list[DEVICE], list[PROPAGATE]):
     """Function that handles the propagate instruction and check if it needs to process"""
     x = None
     if temp:
@@ -86,7 +98,8 @@ def check_if_PROPAGATE(temp: list[PROPAGATE], time_counter: int, device:list[DEV
             sys.exit()
     return device, temp
 
-def create_DEVICE(inst: list[str]) -> tuple[list[DEVICE], int]:
+
+def create_device(inst: list[str]) -> tuple[list[DEVICE], int]:
     """Takes in instructions and finds all that creates a device.
     Create the DEVICE instance using the instructions.
 
@@ -101,12 +114,16 @@ def create_DEVICE(inst: list[str]) -> tuple[list[DEVICE], int]:
             inst_log += 1
     return device, inst_log
 
+
 def only_one_instruction(to_do: list[str], device: list[DEVICE]) -> list[DEVICE]:
+    """
+    This executes the situation where there is only one instruction at a given time.
+    """
     if to_do[0].split(' ')[0] == 'ALERT':
         for z in device:
             if z.show_id() == int(to_do[0].split(' ')[1]):
                 print('ALERT when single')
-                con = situation('ALERT', to_do[0].split(' ')[-2])
+                con = Situation('ALERT', to_do[0].split(' ')[-2])
                 z.add_situation(con)
     elif to_do[0].split(' ')[0] == 'CANCEL':
         for z in device:
@@ -114,6 +131,7 @@ def only_one_instruction(to_do: list[str], device: list[DEVICE]) -> list[DEVICE]
                 print('CANCEL when single ')
                 z.handle_cancel(to_do[0].split(' ')[-2])
     return device
+
 
 def two_at_same_time(to_do: list[str], device: list[DEVICE], reverse: bool) -> list[DEVICE]:
     """Handles two instructions that are scheduled at the same time."""
@@ -132,7 +150,7 @@ def two_at_same_time(to_do: list[str], device: list[DEVICE], reverse: bool) -> l
             for z in device:
                 if z.show_id() == int(to_do[num_1].split(' ')[1]):
                     z.handle_cancel(to_do[num_1].split(' ')[-2])
-                    con = situation('ALERT', to_do[num_2].split(' ')[2])
+                    con = Situation('ALERT', to_do[num_2].split(' ')[2])
                     z.add_situation(con)
     else:
         for z in device:
@@ -141,10 +159,11 @@ def two_at_same_time(to_do: list[str], device: list[DEVICE], reverse: bool) -> l
                 z.handle_cancel(to_do[num_1].split(' ')[-2])
             if z.show_id() == int(to_do[num_2].split(' ')[1]):
                 print('ALERT')
-                con = situation('ALERT', to_do[num_2].split(' ')[2])
+                con = Situation('ALERT', to_do[num_2].split(' ')[2])
                 z.add_situation(con)
                 z.handle_cancel(to_do[num_1].split(' ')[-2])
         return device
+
 
 def running_program(inst: list[str]):
     """Main function to run the entire program"""
@@ -152,14 +171,14 @@ def running_program(inst: list[str]):
     temp = []
     x = None
     other_instruction = find_conflict(inst)
-    device, inst_log = create_DEVICE(inst)
+    device, inst_log = create_device(inst)
     while True:
-        #Process Propagation
-        device, temp = check_if_PROPAGATE(temp, time_counter, device)
+        # Process Propagation
+        device, temp = check_if_propagate(temp, time_counter, device)
         try:
             time_to_do = time_counter
             if inst[inst_log].split(' ')[0] == 'PROPAGATE':
-                #Send cancel/alert to the receiving device.
+                # Send cancel/alert to the receiving device.
                 print("sending message")
                 org = inst[inst_log].split(' ')[1]
                 dest = inst[inst_log].split(' ')[2]
@@ -167,7 +186,7 @@ def running_program(inst: list[str]):
                 for z in device:
                     if z.show_id() == int(org):
                         x = z.situation
-                l1 = PROPAGATE(time_to_do,x,int(org),int(dest))
+                l1 = PROPAGATE(time_to_do, x, int(org), int(dest))
                 for d in x:
                     if d.type == 'CANCEL':
                         print("@{} #{}: SENT CANCELLATION TO #{}: {}".format(time_counter, org, dest, d.msg))
@@ -175,7 +194,7 @@ def running_program(inst: list[str]):
                         print(
                             "@{} #{}: SENT ALERT TO #{}: {}".format(time_counter, org, dest, d.msg))
                 temp.append(l1)
-                inst_log +=1
+                inst_log += 1
         except IndexError:
             pass
         store = []
@@ -185,7 +204,7 @@ def running_program(inst: list[str]):
         if time_counter > max_time:
             sys.exit()
         if str(time_counter) in other_instruction.keys():
-            #In Which alert and cancel are processed.
+            # In Which alert and cancel are processed.
             to_do = other_instruction[str(time_counter)]
             if len(to_do) == 1:
                 inst_log += 1
@@ -204,40 +223,40 @@ def running_program(inst: list[str]):
                         # Command For First Device Greater
                         for z in device:
                             if z.show_id() == int(to_do[1].split(' ')[1]):
-                                con = situation('ALERT', to_do[1].split(' ')[2])
+                                con = Situation('ALERT', to_do[1].split(' ')[2])
                                 z.add_situation(con)
                         for z in device:
                             if z.show_id() == int(to_do[0].split(' ')[1]):
-                                con = situation('ALERT', to_do[0].split(' ')[2])
+                                con = Situation('ALERT', to_do[0].split(' ')[2])
                                 z.add_situation(con)
                     elif int(to_do[0].split(' ')[1]) < int(to_do[1].split(' ')[1]):
                         print('smaller')
                         # Command For First Device Smaller
                         for z in device:
                             if z.show_id() == int(to_do[0].split(' ')[1]):
-                                con = situation('ALERT', to_do[0].split(' ')[2])
+                                con = Situation('ALERT', to_do[0].split(' ')[2])
                                 z.add_situation(con)
                         for z in device:
                             if z.show_id() == int(to_do[1].split(' ')[1]):
-                                con = situation('ALERT', to_do[1].split(' ')[2])
+                                con = Situation('ALERT', to_do[1].split(' ')[2])
                                 z.add_situation(con)
                     elif int(to_do[0].split(' ')[1]) == int(to_do[1].split(' ')[1]):
                         # Same id
                         if to_do[0].split(' ')[2] < to_do[1].split(' ')[2]:
                             for z in device:
                                 if z.show_id() == int(to_do[0].split(' ')[1]):
-                                    con = situation('ALERT', to_do[0].split(' ')[2])
+                                    con = Situation('ALERT', to_do[0].split(' ')[2])
                                     z.add_situation(con)
                                 if z.show_id() == int(to_do[1].split(' ')[1]):
-                                    con = situation('ALERT', to_do[1].split(' ')[2])
+                                    con = Situation('ALERT', to_do[1].split(' ')[2])
                                     z.add_situation(con)
                         else:
                             for z in device:
                                 if z.show_id() == int(to_do[1].split(' ')[1]):
-                                    con = situation('ALERT', to_do[1].split(' ')[2])
+                                    con = Situation('ALERT', to_do[1].split(' ')[2])
                                     z.add_situation(con)
                                 if z.show_id() == int(to_do[0].split(' ')[1]):
-                                    con = situation('ALERT', to_do[0].split(' ')[2])
+                                    con = Situation('ALERT', to_do[0].split(' ')[2])
                                     z.add_situation(con)
                     inst_log += 1
                 elif to_do[0].split(' ')[0] == 'CANCEL' and to_do[1].split(' ')[0] == 'CANCEL':
@@ -261,7 +280,6 @@ def running_program(inst: list[str]):
                             if z.show_id() == int(to_do[0].split(' ')[1]):
                                 z.handle_cancel(to_do[0].split(' ')[-2])
         time_counter += 1
-
 
 
 def main() -> None:
