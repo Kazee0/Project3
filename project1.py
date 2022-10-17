@@ -116,6 +116,36 @@ def only_one_instruction(to_do, device):
                 z.handle_cancel(to_do[0].split(' ')[-2])
     return device
 
+def two_at_same_time(to_do, device, reverse: bool) -> list[DEVICE]:
+    if reverse:
+        num_1 = 0
+        num_2 = 1
+    else:
+        num_1 = 1
+        num_2 = 0
+    if int(to_do[0].split(' ')[1]) == int(to_do[1].split(' ')[1]):
+        # Two instructions sent to same DEVICE
+        if to_do[0].split(' ')[-2] == to_do[1].split(' ')[-2]:
+            # Same message and to same device
+            pass
+        else:
+            for z in device:
+                if z.show_id() == int(to_do[num_1].split(' ')[1]):
+                    z.handle_cancel(to_do[num_1].split(' ')[-2])
+                    con = situation('ALERT', to_do[num_2].split(' ')[2])
+                    z.add_situation(con)
+    else:
+        for z in device:
+            if z.show_id() == int(to_do[num_1].split(' ')[1]):
+                print('CANCEL')
+                z.handle_cancel(to_do[num_1].split(' ')[-2])
+            if z.show_id() == int(to_do[num_2].split(' ')[1]):
+                print('ALERT')
+                con = situation('ALERT', to_do[num_2].split(' ')[2])
+                z.add_situation(con)
+                z.handle_cancel(to_do[num_1].split(' ')[-2])
+        return device
+
 def running_program(inst: list[str]):
     time_counter = 0
     temp = []
@@ -157,54 +187,11 @@ def running_program(inst: list[str]):
                 inst_log += len(to_do)
                 # Multiple actions at the same time.
                 if to_do[0].split(' ')[0] == 'CANCEL' and to_do[1].split(' ')[0] == 'ALERT':
-                    if int(to_do[0].split(' ')[1]) == int(to_do[1].split(' ')[1]):
-                        # Two instructions sent to same DEVICE
-                        if to_do[0].split(' ')[-2] == to_do[1].split(' ')[-2]:
-                            # Same message
-                            pass
-                        else:
-                            for z in device:
-                                if z.show_id() == int(to_do[0].split(' ')[1]):
-                                    print('CANCEL')
-                                    z.handle_cancel(to_do[0].split(' ')[-2])
-                                    con = situation('ALERT', to_do[1].split(' ')[2])
-                                    z.add_situation(con)
-                    else:
-                        for z in device:
-                            if z.show_id() == int(to_do[0].split(' ')[1]):
-                                print('CANCEL')
-                                z.handle_cancel(to_do[0].split(' ')[-2])
-                            if z.show_id() == int(to_do[1].split(' ')[1]):
-                                print('ALERT')
-                                con = situation('ALERT', to_do[1].split(' ')[2])
-                                z.add_situation(con)
-                                z.handle_cancel(to_do[0].split(' ')[-2])
+                    device = two_at_same_time(to_do, device, True)
                 elif to_do[0].split(' ')[0] == 'ALERT' and to_do[1].split(' ')[0] == 'CANCEL':
-                    if int(to_do[1].split(' ')[1]) == int(to_do[1].split(' ')[1]):
-                        # Two instructions sent to same DEVICE
-                        if to_do[1].split(' ')[-2] == to_do[1].split(' ')[-2]:
-                            # Same message
-                            inst_log += 1
-                        else:
-                            for z in device:
-                                if z.show_id() == int(to_do[1].split(' ')[1]):
-                                    print('CANCEL')
-                                    z.handle_cancel(to_do[1].split(' ')[-2])
-                                    con = situation('ALERT', to_do[0].split(' ')[2])
-                                    z.add_situation(con)
-                    else:
-                        for z in device:
-                            if z.show_id() == int(to_do[1].split(' ')[1]):
-                                print('CANCEL')
-                                z.handle_cancel(to_do[1].split(' ')[-2])
-                            if z.show_id() == int(to_do[1].split(' ')[1]):
-                                print('ALERT')
-                                con = situation('ALERT', to_do[0].split(' ')[2])
-                                z.add_situation(con)
-                                z.handle_cancel(to_do[1].split(' ')[-2])
+                    device = two_at_same_time(to_do, device, False)
 
                 if to_do[0].split(' ')[0] == 'ALERT' and to_do[1].split(' ')[0] == 'ALERT':
-                    print('Multiple alerts detected.')
                     if int(to_do[0].split(' ')[1]) > int(to_do[1].split(' ')[1]):
                         print('Greater')
                         # Command For First Device Greater
@@ -214,7 +201,6 @@ def running_program(inst: list[str]):
                                 z.add_situation(con)
                         for z in device:
                             if z.show_id() == int(to_do[0].split(' ')[1]):
-                                print("ALERT")
                                 con = situation('ALERT', to_do[0].split(' ')[2])
                                 z.add_situation(con)
                     elif int(to_do[0].split(' ')[1]) < int(to_do[1].split(' ')[1]):
@@ -222,12 +208,10 @@ def running_program(inst: list[str]):
                         # Command For First Device Smaller
                         for z in device:
                             if z.show_id() == int(to_do[0].split(' ')[1]):
-                                print("ALERT")
                                 con = situation('ALERT', to_do[0].split(' ')[2])
                                 z.add_situation(con)
                         for z in device:
                             if z.show_id() == int(to_do[1].split(' ')[1]):
-                                print("ALERT")
                                 con = situation('ALERT', to_do[1].split(' ')[2])
                                 z.add_situation(con)
                     elif int(to_do[0].split(' ')[1]) == int(to_do[1].split(' ')[1]):
@@ -235,21 +219,17 @@ def running_program(inst: list[str]):
                         if to_do[0].split(' ')[2] < to_do[1].split(' ')[2]:
                             for z in device:
                                 if z.show_id() == int(to_do[0].split(' ')[1]):
-                                    print("ALERT")
                                     con = situation('ALERT', to_do[0].split(' ')[2])
                                     z.add_situation(con)
                                 if z.show_id() == int(to_do[1].split(' ')[1]):
-                                    print("ALERT")
                                     con = situation('ALERT', to_do[1].split(' ')[2])
                                     z.add_situation(con)
                         else:
                             for z in device:
                                 if z.show_id() == int(to_do[1].split(' ')[1]):
-                                    print("ALERT")
                                     con = situation('ALERT', to_do[1].split(' ')[2])
                                     z.add_situation(con)
                                 if z.show_id() == int(to_do[0].split(' ')[1]):
-                                    print("ALERT")
                                     con = situation('ALERT', to_do[0].split(' ')[2])
                                     z.add_situation(con)
                     inst_log += 1
@@ -258,21 +238,18 @@ def running_program(inst: list[str]):
                         if to_do[0].split(' ')[2] < to_do[1].split(' ')[2]:
                             for z in device:
                                 if z.show_id() == int(to_do[0].split(' ')[1]):
-                                    print('CANCEL')
                                     z.handle_cancel(to_do[0].split(' ')[-2])
                                 if z.show_id() == int(to_do[1].split(' ')[1]):
                                     z.handle_cancel(to_do[1].split(' ')[-2])
                         if to_do[0].split(' ')[2] > to_do[1].split(' ')[2]:
                             for z in device:
                                 if z.show_id() == int(to_do[1].split(' ')[1]):
-                                    print('CANCEL')
                                     z.handle_cancel(to_do[1].split(' ')[-2])
                                 if z.show_id() == int(to_do[0].split(' ')[1]):
                                     z.handle_cancel(to_do[0].split(' ')[-2])
                     else:
                         for z in device:
                             if z.show_id() == int(to_do[1].split(' ')[1]):
-                                print('CANCEL')
                                 z.handle_cancel(to_do[1].split(' ')[-2])
                             if z.show_id() == int(to_do[0].split(' ')[1]):
                                 z.handle_cancel(to_do[0].split(' ')[-2])
