@@ -28,6 +28,15 @@ class Device:
         """
         Add cancel or alert to device
         """
+        if self.situation:
+            for i in self.situation:
+                if i.msg == sit.msg:
+                    if i.type == 'ALERT' and sit.type == 'CANCEL':
+                        self.situation.remove(i)
+                    elif i.type == 'CANCEL' and sit.type == 'ALERT':
+                        return
+                    else:
+                        raise Exception('Duplicate Alerts with same message')
         self.situation.append(sit)
 
     def show_id(self):
