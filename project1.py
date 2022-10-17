@@ -5,9 +5,8 @@ import sys
 from ElemetsInstance import *
 
 
-
-
 def _read_input_file_path() -> Path:
+    # This function cannot be tested as no way to put input in shell from test
     """Reads the input file path from the standard input"""
     return Path(input())
 
@@ -42,7 +41,6 @@ def check_if_propagate(temp: list[Propagate], time_counter: int, device: list[De
     return device, temp
 
 
-
 def only_one_instruction(to_do: list[str], device: list[Device]) -> list[Device]:
     """
     This executes the situation where there is only one instruction at a given time.
@@ -75,7 +73,7 @@ def two_at_same_time(to_do: list[str], device: list[Device], reverse: bool) -> l
             # Same message and to same device
             pass
         else:
-            #Different message
+            # Different message
             for z in device:
                 if z.show_id() == int(to_do[num_1].split(' ')[1]):
                     z.handle_cancel(to_do[num_1].split(' ')[-2])
@@ -93,18 +91,39 @@ def two_at_same_time(to_do: list[str], device: list[Device], reverse: bool) -> l
     return device
 
 
+def check_number_propagate(inst: list[str]) -> int:
+    """
+    Look for number of propagate instances need to do
+    """
+    num = 0
+    for i in inst:
+        if i.split(' ')[0] == 'PROPAGATE':
+            num += 1
+    return num
+
+
 def running_program(inst: list[str], device: list[Device], log_ins: int):
     """Main function to run the entire program"""
     time_counter = 0
     temp = []
+    temp_1 = []
+    propagate_runned = 0
     x = None
+    store = []
     other_instruction = find_conflict(inst)
+    for i in other_instruction.keys():
+        store.append(int(i))
+    max_time = max(store)
+    needed = check_number_propagate(inst)
     while True:
         # Process Propagation
-        device, temp = check_if_propagate(temp, time_counter, device)
+        device, temp_1 = check_if_propagate(temp, time_counter, device)
+        if time_counter > max_time and not temp_1 and propagate_runned >= needed:
+            sys.exit()
         try:
             time_to_do = time_counter
             if inst[log_ins].split(' ')[0] == 'PROPAGATE':
+                propagate_runned += 1
                 # Send cancel/alert to the receiving device.
                 print("sending message")
                 org = inst[log_ins].split(' ')[1]
@@ -114,22 +133,16 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
                     if z.show_id() == int(org):
                         x = z.situation
                 l1 = Propagate(time_to_do, x, int(org), int(dest))
+                temp_1.append(l1)
                 for d in x:
                     if d.type == 'CANCEL':
                         print("@{} #{}: SENT CANCELLATION TO #{}: {}".format(time_counter, org, dest, d.msg))
                     if d.type == 'ALERT':
                         print(
                             "@{} #{}: SENT ALERT TO #{}: {}".format(time_counter, org, dest, d.msg))
-                temp.append(l1)
                 log_ins += 1
         except IndexError:
             pass
-        store = []
-        for i in other_instruction.keys():
-            store.append(int(i))
-        max_time = max(store)
-        if time_counter > max_time:
-            sys.exit()
         if str(time_counter) in other_instruction.keys():
             # In Which alert and cancel are processed.
             to_do = other_instruction[str(time_counter)]
@@ -188,7 +201,7 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
                     log_ins += 1
                 elif to_do[0].split(' ')[0] == 'CANCEL' and to_do[1].split(' ')[0] == 'CANCEL':
                     if int(to_do[1].split(' ')[1]) == int(to_do[0].split(' ')[1]):
-                        #Two cancel have same ID
+                        # Two cancel have same ID
                         if to_do[0].split(' ')[2] < to_do[1].split(' ')[2]:
                             for z in device:
                                 if z.show_id() == int(to_do[0].split(' ')[1]):
@@ -205,7 +218,6 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
                                 z.handle_cancel(to_do[1].split(' ')[-2])
                             if z.show_id() == int(to_do[0].split(' ')[1]):
                                 z.handle_cancel(to_do[0].split(' ')[-2])
-
         time_counter += 1
 
 

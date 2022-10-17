@@ -4,6 +4,7 @@ import project1
 from IO_file import read_instructions_from_file
 from InstructionsProcess import *
 from ElemetsInstance import *
+from unittest.mock import patch
 
 
 class MyTestCase(unittest.TestCase):
@@ -269,10 +270,9 @@ class MyTestCase(unittest.TestCase):
         a, b = create_device(text_input)
         with self.assertRaises(SystemExit) as c:
             project1.running_program(text_input, a, b)
-        print(a[0].situation)
         self.assertEqual(a[0].situation[0].msg, 'A')
 
-    def test_running_propergate(self):
+    def test_running_propagate(self):
         text_input = [
             'DEVICE 1',
             'DEVICE 2',
@@ -280,7 +280,10 @@ class MyTestCase(unittest.TestCase):
             'PROPAGATE 1 2 500'
         ]
         a, b = create_device(text_input)
-
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input, a, b)
+        self.assertEqual(a[1].situation[0].msg, 'Trouble')
+        
 
 
 if __name__ == '__main__':
