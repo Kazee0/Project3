@@ -12,8 +12,8 @@ def _read_input_file_path() -> Path:
     return Path(input())
 
 
-def check_if_propagate(temp: list[PROPAGATE], time_counter: int, device: list[Device]) -> (
-        list[Device], list[PROPAGATE]):
+def check_if_propagate(temp: list[Propagate], time_counter: int, device: list[Device]) -> (
+        list[Device], list[Propagate]):
     """Function that handles the propagate instruction and check if it needs to process"""
     x = None
     if temp:
@@ -89,7 +89,6 @@ def two_at_same_time(to_do: list[str], device: list[Device], reverse: bool) -> l
                 print('ALERT')
                 con = Situation('ALERT', to_do[num_2].split(' ')[2])
                 z.add_situation(con)
-                z.handle_cancel(to_do[num_1].split(' ')[-2])
         return device
 
 
@@ -113,7 +112,7 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
                 for z in device:
                     if z.show_id() == int(org):
                         x = z.situation
-                l1 = PROPAGATE(time_to_do, x, int(org), int(dest))
+                l1 = Propagate(time_to_do, x, int(org), int(dest))
                 for d in x:
                     if d.type == 'CANCEL':
                         print("@{} #{}: SENT CANCELLATION TO #{}: {}".format(time_counter, org, dest, d.msg))

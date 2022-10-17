@@ -33,7 +33,9 @@ class Device:
                 if i.msg == sit.msg:
                     if i.type == 'ALERT' and sit.type == 'CANCEL':
                         self.situation.remove(i)
+                        return
                     elif i.type == 'CANCEL' and sit.type == 'ALERT':
+                        self.situation.remove(i)
                         return
                     else:
                         raise Exception('Duplicate Alerts with same message')
@@ -59,7 +61,7 @@ class Device:
             self.add_situation(si)
 
 
-class PROPAGATE:
+class Propagate:
     """An module that contains the propagation
 
     variables:

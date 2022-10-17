@@ -3,6 +3,7 @@ from pathlib import Path
 import project1
 from IO_file import read_instructions_from_file
 from InstructionsProcess import *
+from ElemetsInstance import *
 
 
 class MyTestCase(unittest.TestCase):
@@ -34,13 +35,34 @@ class MyTestCase(unittest.TestCase):
 
     def test_DEVICE(self):
         """Test device instance created as expected."""
-        device_1 = project1.Device(1)
+        device_1 = Device(1)
         self.assertEqual(device_1.show_id(), 1)
+        self.assertEqual(device_1.situation, [])
+        sit = Situation('ALERT', 'Trouble')
+        device_1.add_situation(sit)
+        self.assertEqual(device_1.situation[0].type, 'ALERT')
+        self.assertEqual(device_1.situation[0].msg, 'Trouble')
+        sit = Situation('ALERT', 'Trouble')
+        try:
+            device_1.add_situation(sit)
+        except Exception as e:
+            self.assertEqual(str(e), 'Duplicate Alerts with same message')
+        device_1.handle_cancel('Trouble')
+        self.assertEqual(device_1.situation, [])
+        sit = Situation('ALERT', 'Trouble')
+        device_1.add_situation(sit)
+        sit = Situation('CANCEL', 'Trouble')
+        device_1.add_situation(sit)
+        self.assertEqual(device_1.situation, [])
+        sit = Situation('CANCEL', 'Trouble')
+        device_1.add_situation(sit)
+        sit = Situation('ALERT', 'Trouble')
+        device_1.add_situation(sit)
         self.assertEqual(device_1.situation, [])
 
     def test_PRO(self):
         """Test the propagate instance created."""
-        pro = project1.PROPAGATE(0, 'ALERT', 1, 2)
+        pro = Propagate(0, 'ALERT', 1, 2)
         self.assertEqual(pro.type, 'ALERT')
         self.assertEqual(pro.time, 0)
         self.assertEqual(pro.from_ID, 1)
@@ -78,7 +100,7 @@ class MyTestCase(unittest.TestCase):
         device_1.add_situation(can)
         device_input = [project1.Device(2), device_1]
         time_input = 10
-        temp_input = [project1.PROPAGATE(10, [can], 1, 2)]
+        temp_input = [project1.Propagate(10, [can], 1, 2)]
         with self.assertRaises(SystemExit) as c:
             out = project1.check_if_propagate(temp_input, time_input, device_input)
             self.assertEqual(out[0].Situation[0].msg, 'HELP')
@@ -105,8 +127,9 @@ class MyTestCase(unittest.TestCase):
             'DEVICE 2',
             'ALERT 1 Trouble 200',
         ]
+        a, b = create_device(text_input)
         with self.assertRaises(SystemExit) as c:
-            project1.running_program(text_input)
+            project1.running_program(text_input, a, b)
         self.assertEqual(c.exception.code, None)
 
     def test_two_alerts(self):
@@ -132,7 +155,7 @@ class MyTestCase(unittest.TestCase):
             'ALERT 2 Trouble 200',
             'ALERT 1 AnotherOne 200',
         ]
-        a,b = create_device(text_input)
+        a, b = create_device(text_input)
         with self.assertRaises(SystemExit) as c:
             project1.running_program(text_input, a, b)
             self.assertEqual(a[0].situation[0].type, 'ALERT')
@@ -141,8 +164,18 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
         self.assertEqual(c.exception.code, None)
 
-
-
+    def test_two_at_same_time_differnt_cotnent(self):
+        text_input = ['DEVICE 8', 'DEVICE 10']
+        a, b = create_device(text_input)
+        inst_input = ['ALERT 8 ABC 10', 'CANCEL 10 NC 10']
+        de_li = project1.two_at_same_time(inst_input, a, False)
+        self.assertEqual(de_li[0].situation[0].msg, 'ABC')
+        self.assertEqual(de_li[1].situation[0].msg, 'NC')
+        self.assertEqual(de_li[0].situation[0].type, 'ALERT')
+        self.assertEqual(de_li[1].situation[0].type, 'CANCEL')
+        inst_input = ['CANCEL 10 NC 10', 'ALERT 8 ABC 10']
+        de_li = project1.two_at_same_time(inst_input, a, True)
+        self.assertEqual(de_li[0].situation[0].msg, 'ABC')
 
 if __name__ == '__main__':
     unittest.main()
