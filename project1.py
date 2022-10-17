@@ -155,7 +155,7 @@ def running_program(inst: list[str]):
                 device = only_one_instruction(to_do, device)
             if len(to_do) > 1:
                 inst_log += len(to_do)
-                # Mutiple actions at the same time.
+                # Multiple actions at the same time.
                 if to_do[0].split(' ')[0] == 'CANCEL' and to_do[1].split(' ')[0] == 'ALERT':
                     if int(to_do[0].split(' ')[1]) == int(to_do[1].split(' ')[1]):
                         # Two instructions sent to same DEVICE
