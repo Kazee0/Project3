@@ -187,14 +187,18 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
                                     z.add_situation(con)
                     log_ins += 1
                 elif to_do[0].split(' ')[0] == 'CANCEL' and to_do[1].split(' ')[0] == 'CANCEL':
-                    if to_do[1].split(' ')[2] == to_do[0].split(' ')[2]:
-                        #Same ID cancel
+                    if int(to_do[1].split(' ')[1]) == int(to_do[0].split(' ')[1]):
+                        #Two cancel have same ID
                         if to_do[0].split(' ')[2] < to_do[1].split(' ')[2]:
                             for z in device:
                                 if z.show_id() == int(to_do[0].split(' ')[1]):
                                     z.handle_cancel(to_do[0].split(' ')[-2])
-                                if z.show_id() == int(to_do[1].split(' ')[1]):
                                     z.handle_cancel(to_do[1].split(' ')[-2])
+                        elif to_do[0].split(' ')[2] > to_do[1].split(' ')[2]:
+                            for z in device:
+                                if z.show_id() == int(to_do[0].split(' ')[1]):
+                                    z.handle_cancel(to_do[1].split(' ')[-2])
+                                    z.handle_cancel(to_do[0].split(' ')[-2])
                     else:
                         for z in device:
                             if z.show_id() == int(to_do[1].split(' ')[1]):

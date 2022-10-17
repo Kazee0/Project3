@@ -214,17 +214,30 @@ class MyTestCase(unittest.TestCase):
         with self.assertRaises(SystemExit) as c:
             project1.running_program(text_input, a, b)
         self.assertEqual(a[1].situation, [])
-        ext_input = [
+        text_input = [
             'DEVICE 1',
             'DEVICE 2',
             'ALERT 1 Trouble 200',
-            'ALERT 2 AnotherOne 500',
-            'CANCEL 1 AnotherOne 200'
+            'ALERT 2 AnotherOne 200'
         ]
+        # Two alerts first smaller
         a, b = create_device(text_input)
         with self.assertRaises(SystemExit) as c:
             project1.running_program(text_input, a, b)
-        self.assertEqual(a[1].situation, [])
+        self.assertEqual(a[0].situation[0].msg, 'Trouble')
+        self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 2 Trouble 200',
+            'ALERT 1 AnotherOne 200'
+        ]
+        # Two Alerts first greater
+        a, b = create_device(text_input)
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input, a, b)
+        self.assertEqual(a[0].situation[0].msg, 'AnotherOne')
+        self.assertEqual(a[1].situation[0].msg, 'Trouble')
 
         text_input = [
             'DEVICE 1',
@@ -250,13 +263,24 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
         text_input = [
             'DEVICE 1',
-            'DEVICE 2',
             'CANCEL 1 BAJFIOQEO 200',
             'CANCEL 1 A 200',
         ]
         a, b = create_device(text_input)
         with self.assertRaises(SystemExit) as c:
             project1.running_program(text_input, a, b)
+        print(a[0].situation)
+        self.assertEqual(a[0].situation[0].msg, 'A')
+
+    def test_running_propergate(self):
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 1 Trouble 200',
+            'PROPAGATE 1 2 500'
+        ]
+        a, b = create_device(text_input)
+
 
 
 if __name__ == '__main__':

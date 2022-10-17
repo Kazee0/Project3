@@ -20,8 +20,8 @@ class Device:
         handle_cancel: receive the message of alert to be canceled and delete that from log
     """
 
-    def __init__(self, ID):
-        self._ID = ID
+    def __init__(self, id1):
+        self._ID = int(id1)
         self.situation = []
 
     def add_situation(self, sit):
@@ -57,6 +57,7 @@ class Device:
                 self.situation.remove(i)
                 flag = True
         if not flag:
+            print(1)
             si = Situation('CANCEL', msg)
             self.add_situation(si)
 
