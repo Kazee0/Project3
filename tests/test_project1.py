@@ -100,7 +100,15 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(out[0].situation[0].msg, 'ABC')
         self.assertEqual(out[0].situation[0].type, 'CANCEL')
 
-
+    def test_two_at_same_time(self):
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 1 Trouble 200',
+        ]
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input)
+        self.assertEqual(c.exception.code, None)
 
 
 

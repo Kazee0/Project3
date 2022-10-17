@@ -29,12 +29,11 @@ class DEVICE:
         self.situation.append(sit)
     def show_id(self):
         return self._ID
-
     def handle_cancel(self, msg):
         flag = False
-        for i in range(len(self.situation)):
-            if self.situation[i].msg == msg:
-                self.situation.pop(i)
+        for i in self.situation:
+            if i.msg == msg:
+                self.situation.remove(i)
                 flag = True
         if not flag:
             si = situation('CANCEL', msg)
@@ -102,7 +101,7 @@ def create_DEVICE(inst: list[str]) -> tuple[list[DEVICE], int]:
             inst_log += 1
     return device, inst_log
 
-def only_one_instruction(to_do, device):
+def only_one_instruction(to_do: list[str], device: list[DEVICE]) -> list[DEVICE]:
     if to_do[0].split(' ')[0] == 'ALERT':
         for z in device:
             if z.show_id() == int(to_do[0].split(' ')[1]):
@@ -116,7 +115,8 @@ def only_one_instruction(to_do, device):
                 z.handle_cancel(to_do[0].split(' ')[-2])
     return device
 
-def two_at_same_time(to_do, device, reverse: bool) -> list[DEVICE]:
+def two_at_same_time(to_do: list[str], device: list[DEVICE], reverse: bool) -> list[DEVICE]:
+    """Handles two instructions that are scheduled at the same time."""
     if reverse:
         num_1 = 0
         num_2 = 1
@@ -147,6 +147,7 @@ def two_at_same_time(to_do, device, reverse: bool) -> list[DEVICE]:
         return device
 
 def running_program(inst: list[str]):
+    """Main function to run the entire program"""
     time_counter = 0
     temp = []
     x = None
@@ -177,6 +178,12 @@ def running_program(inst: list[str]):
                 inst_log +=1
         except IndexError:
             pass
+        store = []
+        for i in other_instruction.keys():
+            store.append(int(i))
+        max_time = max(store)
+        if time_counter > max_time:
+            sys.exit()
         if str(time_counter) in other_instruction.keys():
             #In Which alert and cancel are processed.
             to_do = other_instruction[str(time_counter)]
