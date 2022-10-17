@@ -1,67 +1,10 @@
 from pathlib import Path
 from IO_file import read_instructions_from_file
-from conflicts import find_conflict
+from InstructionsProcess import *
 import sys
+from ElemetsInstance import *
 
 
-class Situation:
-    """Contain Situation to store
-
-    variables:
-        self.type: str, can be 'CANCEL' or 'ALERT'
-        self.msg: str, that contains the message of alert or cancel
-    """
-
-    def __init__(self, types, msg):
-        self.type = types
-        self.msg = msg
-
-
-class DEVICE:
-    """Module of the devices
-
-    functions:
-        add_situation: adding Situation to device log
-        show_id: returns device ID
-        handle_cancel: receive the message of alert to be canceled and delete that from log
-    """
-
-    def __init__(self, ID):
-        self._ID = ID
-        self.situation = []
-
-    def add_situation(self, sit):
-        self.situation.append(sit)
-
-    def show_id(self):
-        return self._ID
-
-    def handle_cancel(self, msg):
-        flag = False
-        for i in self.situation:
-            if i.msg == msg:
-                self.situation.remove(i)
-                flag = True
-        if not flag:
-            si = Situation('CANCEL', msg)
-            self.add_situation(si)
-
-
-class PROPAGATE:
-    """An module that contains the propagation
-
-    variables:
-        self.type: contains if the information is cancellation or alert
-        self.time: int that contains the time to receive the message
-        self.from_ID: int that contains the ID of the sending device
-        self.to_ID: int that contains the ID of receiving device
-    """
-
-    def __init__(self, time, types, from_ID, to_ID):
-        self.type = types
-        self.time = time
-        self.from_ID = from_ID
-        self.to_ID = to_ID
 
 
 def _read_input_file_path() -> Path:
@@ -69,8 +12,8 @@ def _read_input_file_path() -> Path:
     return Path(input())
 
 
-def check_if_propagate(temp: list[PROPAGATE], time_counter: int, device: list[DEVICE]) -> (
-        list[DEVICE], list[PROPAGATE]):
+def check_if_propagate(temp: list[PROPAGATE], time_counter: int, device: list[Device]) -> (
+        list[Device], list[PROPAGATE]):
     """Function that handles the propagate instruction and check if it needs to process"""
     x = None
     if temp:
@@ -99,23 +42,8 @@ def check_if_propagate(temp: list[PROPAGATE], time_counter: int, device: list[DE
     return device, temp
 
 
-def create_device(inst: list[str]) -> tuple[list[DEVICE], int]:
-    """Takes in instructions and finds all that creates a device.
-    Create the DEVICE instance using the instructions.
 
-    Returns:
-        the list of devices and the log of instructions carried.
-    """
-    device = []
-    inst_log = 0
-    for i in range(len(inst)):
-        if inst[i].split(' ')[0] == 'DEVICE':
-            device.append(DEVICE(int(inst[i].split()[1])))
-            inst_log += 1
-    return device, inst_log
-
-
-def only_one_instruction(to_do: list[str], device: list[DEVICE]) -> list[DEVICE]:
+def only_one_instruction(to_do: list[str], device: list[Device]) -> list[Device]:
     """
     This executes the situation where there is only one instruction at a given time.
     """
@@ -133,7 +61,7 @@ def only_one_instruction(to_do: list[str], device: list[DEVICE]) -> list[DEVICE]
     return device
 
 
-def two_at_same_time(to_do: list[str], device: list[DEVICE], reverse: bool) -> list[DEVICE]:
+def two_at_same_time(to_do: list[str], device: list[Device], reverse: bool) -> list[Device]:
     """Handles two instructions that are scheduled at the same time."""
     if reverse:
         num_1 = 0
@@ -165,24 +93,23 @@ def two_at_same_time(to_do: list[str], device: list[DEVICE], reverse: bool) -> l
         return device
 
 
-def running_program(inst: list[str]):
+def running_program(inst: list[str], device: list[Device], log_ins: int):
     """Main function to run the entire program"""
     time_counter = 0
     temp = []
     x = None
     other_instruction = find_conflict(inst)
-    device, inst_log = create_device(inst)
     while True:
         # Process Propagation
         device, temp = check_if_propagate(temp, time_counter, device)
         try:
             time_to_do = time_counter
-            if inst[inst_log].split(' ')[0] == 'PROPAGATE':
+            if inst[log_ins].split(' ')[0] == 'PROPAGATE':
                 # Send cancel/alert to the receiving device.
                 print("sending message")
-                org = inst[inst_log].split(' ')[1]
-                dest = inst[inst_log].split(' ')[2]
-                time_to_do = time_counter + int(inst[inst_log].split(' ')[-1])
+                org = inst[log_ins].split(' ')[1]
+                dest = inst[log_ins].split(' ')[2]
+                time_to_do = time_counter + int(inst[log_ins].split(' ')[-1])
                 for z in device:
                     if z.show_id() == int(org):
                         x = z.situation
@@ -194,7 +121,7 @@ def running_program(inst: list[str]):
                         print(
                             "@{} #{}: SENT ALERT TO #{}: {}".format(time_counter, org, dest, d.msg))
                 temp.append(l1)
-                inst_log += 1
+                log_ins += 1
         except IndexError:
             pass
         store = []
@@ -207,10 +134,10 @@ def running_program(inst: list[str]):
             # In Which alert and cancel are processed.
             to_do = other_instruction[str(time_counter)]
             if len(to_do) == 1:
-                inst_log += 1
+                log_ins += 1
                 device = only_one_instruction(to_do, device)
             if len(to_do) > 1:
-                inst_log += len(to_do)
+                log_ins += len(to_do)
                 # Multiple actions at the same time.
                 if to_do[0].split(' ')[0] == 'CANCEL' and to_do[1].split(' ')[0] == 'ALERT':
                     device = two_at_same_time(to_do, device, True)
@@ -258,7 +185,7 @@ def running_program(inst: list[str]):
                                 if z.show_id() == int(to_do[0].split(' ')[1]):
                                     con = Situation('ALERT', to_do[0].split(' ')[2])
                                     z.add_situation(con)
-                    inst_log += 1
+                    log_ins += 1
                 elif to_do[0].split(' ')[0] == 'CANCEL' and to_do[1].split(' ')[0] == 'CANCEL':
                     if to_do[1].split(' ')[2] == to_do[0].split(' ')[2]:
                         if to_do[0].split(' ')[2] < to_do[1].split(' ')[2]:
@@ -286,7 +213,8 @@ def main() -> None:
     """Runs the simulation program in its entirety"""
     input_file_path = _read_input_file_path()
     inst = read_instructions_from_file(input_file_path)
-    running_program(inst)
+    device_1, inst_log = create_device(inst)
+    running_program(inst, device_1, inst_log)
 
 
 if __name__ == '__main__':

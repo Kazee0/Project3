@@ -1,9 +1,8 @@
 import unittest
 from pathlib import Path
 import project1
-import io
 from IO_file import read_instructions_from_file
-from conflicts import find_conflict
+from InstructionsProcess import *
 
 
 class MyTestCase(unittest.TestCase):
@@ -35,7 +34,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_DEVICE(self):
         """Test device instance created as expected."""
-        device_1 = project1.DEVICE(1)
+        device_1 = project1.Device(1)
         self.assertEqual(device_1.show_id(), 1)
         self.assertEqual(device_1.situation, [])
 
@@ -49,7 +48,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_alert_cancel(self):
         """Testing the device can handle the instructions"""
-        pro = project1.DEVICE(1)
+        pro = project1.Device(1)
         alert = project1.Situation('ALERT', 'HELP')
         pro.add_situation(alert)
         self.assertEqual(pro.situation[0].type, 'ALERT')
@@ -74,10 +73,10 @@ class MyTestCase(unittest.TestCase):
 
     def test_propagate(self):
         """Testing for receiving propagate"""
-        device_1 = project1.DEVICE(1)
+        device_1 = project1.Device(1)
         can = project1.Situation('CANCEL', 'HELP')
         device_1.add_situation(can)
-        device_input = [project1.DEVICE(2), device_1]
+        device_input = [project1.Device(2), device_1]
         time_input = 10
         temp_input = [project1.PROPAGATE(10, [can], 1, 2)]
         with self.assertRaises(SystemExit) as c:
@@ -88,19 +87,19 @@ class MyTestCase(unittest.TestCase):
 
     def test_only_one(self):
         to_do_input = ['ALERT 1 ABC 100']
-        device_1 = project1.DEVICE(1)
+        device_1 = project1.Device(1)
         out = project1.only_one_instruction(to_do_input, [device_1])
         situation_out = out[0].situation[0]
         self.assertEqual(out[0].situation[0].msg, 'ABC')
         self.assertEqual(out[0].situation[0].type, 'ALERT')
         to_do_input = ['CANCEL 1 ABC 100']
-        device_1 = project1.DEVICE(1)
+        device_1 = project1.Device(1)
         out = project1.only_one_instruction(to_do_input, [device_1])
         situation_out = out[0].situation[0]
         self.assertEqual(out[0].situation[0].msg, 'ABC')
         self.assertEqual(out[0].situation[0].type, 'CANCEL')
 
-    def test_two_at_same_time(self):
+    def test_single_alert_time(self):
         text_input = [
             'DEVICE 1',
             'DEVICE 2',
@@ -110,6 +109,37 @@ class MyTestCase(unittest.TestCase):
             project1.running_program(text_input)
         self.assertEqual(c.exception.code, None)
 
+    def test_two_alerts(self):
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 1 Trouble 200',
+            'ALERT 2 AnotherOne 200',
+        ]
+        a,b = create_device(text_input)
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input, a, b)
+            self.assertEqual(a[0].situation[0].type, 'ALERT')
+            self.assertEqual(a[0].situation[0].msg, 'Trouble')
+            self.assertEqual(a[1].situation[0].type, 'ALERT')
+            self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
+        self.assertEqual(c.exception.code, None)
+
+    def test_two_alerts_greater(self):
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 2 Trouble 200',
+            'ALERT 1 AnotherOne 200',
+        ]
+        a,b = create_device(text_input)
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input, a, b)
+            self.assertEqual(a[0].situation[0].type, 'ALERT')
+            self.assertEqual(a[0].situation[0].msg, 'Trouble')
+            self.assertEqual(a[1].situation[0].type, 'ALERT')
+            self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
+        self.assertEqual(c.exception.code, None)
 
 
 
