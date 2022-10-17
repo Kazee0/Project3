@@ -164,11 +164,25 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
         self.assertEqual(c.exception.code, None)
 
+    def test_two_same(self):
+        text_input = ['DEVICE 8']
+        inst_input = ['ALERT 8 ABC 10', 'CANCEL 8 NC 10']
+        a, b = create_device(text_input)
+        de_li = project1.two_at_same_time(inst_input, a, True)
+        self.assertEqual(de_li[0].situation[0].type, 'CANCEL')
+        self.assertEqual(de_li[0].situation[1].type, 'ALERT')
+        text_input = ['DEVICE 8']
+        inst_input = ['ALERT 8 NC 10', 'CANCEL 8 NC 10']
+        a, b = create_device(text_input)
+        de_li = project1.two_at_same_time(inst_input, a, True)
+        self.assertEqual(de_li[0].situation, [])
+
     def test_two_at_same_time_differnt_cotnent(self):
         text_input = ['DEVICE 8', 'DEVICE 10']
         a, b = create_device(text_input)
         inst_input = ['ALERT 8 ABC 10', 'CANCEL 10 NC 10']
         de_li = project1.two_at_same_time(inst_input, a, False)
+        a, b = create_device(text_input)
         self.assertEqual(de_li[0].situation[0].msg, 'ABC')
         self.assertEqual(de_li[1].situation[0].msg, 'NC')
         self.assertEqual(de_li[0].situation[0].type, 'ALERT')
@@ -176,6 +190,74 @@ class MyTestCase(unittest.TestCase):
         inst_input = ['CANCEL 10 NC 10', 'ALERT 8 ABC 10']
         de_li = project1.two_at_same_time(inst_input, a, True)
         self.assertEqual(de_li[0].situation[0].msg, 'ABC')
+
+    def test_running(self):
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 1 Trouble 200',
+            'ALERT 2 AnotherOne 500',
+            'CANCEL 2 AnotherOne 600'
+        ]
+        a, b = create_device(text_input)
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input, a, b)
+        self.assertEqual(a[1].situation,[])
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 1 Trouble 200',
+            'ALERT 2 AnotherOne 500',
+            'CANCEL 2 AnotherOne 500'
+        ]
+        a, b = create_device(text_input)
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input, a, b)
+        self.assertEqual(a[1].situation, [])
+        ext_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 1 Trouble 200',
+            'ALERT 2 AnotherOne 500',
+            'CANCEL 1 AnotherOne 200'
+        ]
+        a, b = create_device(text_input)
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input, a, b)
+        self.assertEqual(a[1].situation, [])
+
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 1 Trouble 200',
+            'ALERT 1 AnotherOne 200',
+            'CANCEL 2 AnotherOne 400',
+        ]
+        a, b = create_device(text_input)
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input, a, b)
+        self.assertEqual(a[1].situation[0].type, 'CANCEL')
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'CANCEL 1 Trouble 200',
+            'CANCEL 2 AnotherOne 200',
+        ]
+        a, b = create_device(text_input)
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input, a, b)
+        self.assertEqual(a[0].situation[0].msg, 'Trouble')
+        self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'CANCEL 1 BAJFIOQEO 200',
+            'CANCEL 1 A 200',
+        ]
+        a, b = create_device(text_input)
+        with self.assertRaises(SystemExit) as c:
+            project1.running_program(text_input, a, b)
+
 
 if __name__ == '__main__':
     unittest.main()
