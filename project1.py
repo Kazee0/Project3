@@ -1,7 +1,7 @@
 from pathlib import Path
 from IO_file import read_instructions_from_file
 from InstructionsProcess import *
-import sys
+import os
 from ElemetsInstance import *
 
 
@@ -37,7 +37,7 @@ def check_if_propagate(temp: list[Propagate], time_counter: int, device: list[De
                                     time_counter, device_to, device_from, s.msg))
                 temp.remove(i)
         if not temp:
-            sys.exit()
+            quit()
     return device, temp
 
 
@@ -107,7 +107,7 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
     time_counter = 0
     temp = []
     temp_1 = []
-    propagate_runned = 0
+    propagate_run = 0
     x = None
     store = []
     other_instruction = find_conflict(inst)
@@ -118,12 +118,12 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
     while True:
         # Process Propagation
         device, temp_1 = check_if_propagate(temp, time_counter, device)
-        if time_counter > max_time and not temp_1 and propagate_runned >= needed:
-            sys.exit()
+        if time_counter > max_time and not temp_1 and propagate_run >= needed:
+            quit()
         try:
             time_to_do = time_counter
             if inst[log_ins].split(' ')[0] == 'PROPAGATE':
-                propagate_runned += 1
+                propagate_run += 1
                 # Send cancel/alert to the receiving device.
                 print("sending message")
                 org = inst[log_ins].split(' ')[1]
@@ -159,7 +159,6 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
 
                 if to_do[0].split(' ')[0] == 'ALERT' and to_do[1].split(' ')[0] == 'ALERT':
                     if int(to_do[0].split(' ')[1]) > int(to_do[1].split(' ')[1]):
-                        print('Greater')
                         # Command For First Device Greater
                         for z in device:
                             if z.show_id() == int(to_do[1].split(' ')[1]):
@@ -170,7 +169,6 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
                                 con = Situation('ALERT', to_do[0].split(' ')[2])
                                 z.add_situation(con)
                     elif int(to_do[0].split(' ')[1]) < int(to_do[1].split(' ')[1]):
-                        print('smaller')
                         # Command For First Device Smaller
                         for z in device:
                             if z.show_id() == int(to_do[0].split(' ')[1]):

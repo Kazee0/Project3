@@ -141,13 +141,13 @@ class MyTestCase(unittest.TestCase):
             'ALERT 2 AnotherOne 200',
         ]
         a,b = create_device(text_input)
-        with self.assertRaises(SystemExit) as c:
+        try:
             project1.running_program(text_input, a, b)
+        except SystemExit:
             self.assertEqual(a[0].situation[0].type, 'ALERT')
             self.assertEqual(a[0].situation[0].msg, 'Trouble')
             self.assertEqual(a[1].situation[0].type, 'ALERT')
             self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
-        self.assertEqual(c.exception.code, None)
 
     def test_two_alerts_greater(self):
         text_input = [
@@ -157,13 +157,13 @@ class MyTestCase(unittest.TestCase):
             'ALERT 1 AnotherOne 200',
         ]
         a, b = create_device(text_input)
-        with self.assertRaises(SystemExit) as c:
+        try:
             project1.running_program(text_input, a, b)
+        except SystemExit:
             self.assertEqual(a[0].situation[0].type, 'ALERT')
-            self.assertEqual(a[0].situation[0].msg, 'Trouble')
+            self.assertEqual(a[0].situation[0].msg, 'AnotherOne')
             self.assertEqual(a[1].situation[0].type, 'ALERT')
-            self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
-        self.assertEqual(c.exception.code, None)
+            self.assertEqual(a[1].situation[0].msg, 'Trouble')
 
     def test_two_same(self):
         text_input = ['DEVICE 8']
@@ -201,20 +201,24 @@ class MyTestCase(unittest.TestCase):
             'CANCEL 2 AnotherOne 600'
         ]
         a, b = create_device(text_input)
-        with self.assertRaises(SystemExit) as c:
+        try:
             project1.running_program(text_input, a, b)
-        self.assertEqual(a[1].situation,[])
+        except SystemExit as e:
+            self.assertEqual(a[1].situation,[])
+
+    def test_running_same_device_same_msg(self):
         text_input = [
-            'DEVICE 1',
             'DEVICE 2',
-            'ALERT 1 Trouble 200',
             'ALERT 2 AnotherOne 500',
             'CANCEL 2 AnotherOne 500'
         ]
         a, b = create_device(text_input)
-        with self.assertRaises(SystemExit) as c:
+        try:
             project1.running_program(text_input, a, b)
-        self.assertEqual(a[1].situation, [])
+        except SystemExit:
+            self.assertEqual(a[0].situation, [])
+
+    def test_running_diff_device_same_time(self):
         text_input = [
             'DEVICE 1',
             'DEVICE 2',
@@ -223,10 +227,12 @@ class MyTestCase(unittest.TestCase):
         ]
         # Two alerts first smaller
         a, b = create_device(text_input)
-        with self.assertRaises(SystemExit) as c:
+        try:
             project1.running_program(text_input, a, b)
-        self.assertEqual(a[0].situation[0].msg, 'Trouble')
-        self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
+        except SystemExit:
+            self.assertEqual(a[0].situation[0].msg, 'Trouble')
+            self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
+    def test_same_time_first_greater(self):
         text_input = [
             'DEVICE 1',
             'DEVICE 2',
@@ -235,11 +241,12 @@ class MyTestCase(unittest.TestCase):
         ]
         # Two Alerts first greater
         a, b = create_device(text_input)
-        with self.assertRaises(SystemExit) as c:
+        try:
             project1.running_program(text_input, a, b)
-        self.assertEqual(a[0].situation[0].msg, 'AnotherOne')
-        self.assertEqual(a[1].situation[0].msg, 'Trouble')
-
+        except SystemExit:
+            self.assertEqual(a[0].situation[0].msg, 'AnotherOne')
+            self.assertEqual(a[1].situation[0].msg, 'Trouble')
+    def test_same_device_alerts(self):
         text_input = [
             'DEVICE 1',
             'DEVICE 2',
@@ -248,9 +255,11 @@ class MyTestCase(unittest.TestCase):
             'CANCEL 2 AnotherOne 400',
         ]
         a, b = create_device(text_input)
-        with self.assertRaises(SystemExit) as c:
+        try:
             project1.running_program(text_input, a, b)
-        self.assertEqual(a[1].situation[0].type, 'CANCEL')
+        except SystemExit:
+            self.assertEqual(a[1].situation[0].type, 'CANCEL')
+    def test_two_cancel_dif_device(self):
         text_input = [
             'DEVICE 1',
             'DEVICE 2',
@@ -258,19 +267,22 @@ class MyTestCase(unittest.TestCase):
             'CANCEL 2 AnotherOne 200',
         ]
         a, b = create_device(text_input)
-        with self.assertRaises(SystemExit) as c:
+        try:
             project1.running_program(text_input, a, b)
-        self.assertEqual(a[0].situation[0].msg, 'Trouble')
-        self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
+        except SystemExit:
+            self.assertEqual(a[0].situation[0].msg, 'Trouble')
+            self.assertEqual(a[1].situation[0].msg, 'AnotherOne')
+    def test_same_device_first_greater(self):
         text_input = [
             'DEVICE 1',
             'CANCEL 1 BAJFIOQEO 200',
             'CANCEL 1 A 200',
         ]
         a, b = create_device(text_input)
-        with self.assertRaises(SystemExit) as c:
+        try:
             project1.running_program(text_input, a, b)
-        self.assertEqual(a[0].situation[0].msg, 'A')
+        except SystemExit:
+            self.assertEqual(a[0].situation[0].msg, 'A')
 
     def test_running_propagate(self):
         text_input = [
@@ -280,9 +292,10 @@ class MyTestCase(unittest.TestCase):
             'PROPAGATE 1 2 500'
         ]
         a, b = create_device(text_input)
-        with self.assertRaises(SystemExit) as c:
+        try:
             project1.running_program(text_input, a, b)
-        self.assertEqual(a[1].situation[0].msg, 'Trouble')
+        except SystemExit:
+            self.assertEqual(a[1].situation[0].msg, 'Trouble')
         
 
 
