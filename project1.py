@@ -1,7 +1,6 @@
 from pathlib import Path
 from IO_file import read_instructions_from_file
 from InstructionsProcess import *
-import os
 from ElemetsInstance import *
 
 
@@ -37,7 +36,7 @@ def check_if_propagate(temp: list[Propagate], time_counter: int, device: list[De
                                     time_counter, device_to, device_from, s.msg))
                 temp.remove(i)
         if not temp:
-            quit()
+            return device, temp
     return device, temp
 
 
@@ -220,6 +219,7 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
 
 
 def main() -> None:
+    # The main function also could not be tested as it requires the user input
     """Runs the simulation program in its entirety"""
     input_file_path = _read_input_file_path()
     inst = read_instructions_from_file(input_file_path)

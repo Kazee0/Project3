@@ -103,10 +103,11 @@ class MyTestCase(unittest.TestCase):
         time_input = 10
         temp_input = [project1.Propagate(10, [can], 1, 2)]
         try:
-            out = project1.check_if_propagate(temp_input, time_input, device_input)
+            out,b = project1.check_if_propagate(temp_input, time_input, device_input)
+            self.assertEqual(out[0].situation[0].msg, 'HELP')
+            self.assertEqual(out[0].situation[0].type, 'CANCEL')
         except SystemExit:
-            self.assertEqual(out[0].Situation[0].msg, 'HELP')
-            self.assertEqual(out[0].Situation[0].type, 'CANCEL')
+            pass
 
     def test_only_one(self):
         to_do_input = ['ALERT 1 ABC 100']
@@ -297,6 +298,69 @@ class MyTestCase(unittest.TestCase):
         except SystemExit:
             self.assertEqual(a[1].situation[0].msg, 'Trouble')
         
+    def test_propagate_alert(self):
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 1 Trouble 200',
+            'PROPAGATE 1 2 500'
+        ]
+        a, b = create_device(text_input)
+        try:
+            project1.running_program(text_input, a, b)
+        except SystemExit:
+            self.assertEqual(a[1].situation[0].msg, 'Trouble')
+
+    def test_propagate_cancel(self):
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'CANCEL 1 Trouble 200',
+            'PROPAGATE 1 2 500'
+        ]
+        a, b = create_device(text_input)
+        try:
+            project1.running_program(text_input, a, b)
+        except SystemExit:
+            self.assertEqual(a[1].situation[0].msg, 'Trouble')
+
+    def test_two_cancel_dif(self):
+        text_input = [
+            'DEVICE 1',
+            'CANCEL 1 A 200',
+            'CANCEL 1 AoooA 200'
+        ]
+        a, b = create_device(text_input)
+        try:
+            project1.running_program(text_input, a, b)
+        except SystemExit:
+            self.assertEqual(a[0].situation[0].msg, 'A')
+            self.assertEqual(a[0].situation[1].msg, 'AoooA')
+
+    def test_cancel_alert(self):
+        text_input = [
+            'DEVICE 1',
+            'CANCEL 1 First 200',
+            'ALERT 1 Second 200'
+        ]
+        a, b = create_device(text_input)
+        try:
+            project1.running_program(text_input, a, b)
+        except SystemExit:
+            self.assertEqual(a[0].situation[0].msg, 'First')
+            self.assertEqual(a[0].situation[1].msg, 'Second')
+    def test_two_alerts_same_time(self):
+        text_input = [
+            'DEVICE 1',
+            'ALERT 1 First 200',
+            'ALERT 1 Second 200'
+        ]
+        a, b = create_device(text_input)
+        try:
+            project1.running_program(text_input, a, b)
+        except SystemExit:
+            self.assertEqual(a[0].situation[0].msg, 'First')
+            self.assertEqual(a[0].situation[1].msg, 'Second')
 
 
 if __name__ == '__main__':
