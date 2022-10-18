@@ -4,8 +4,8 @@ import project1
 from IO_file import read_instructions_from_file
 from InstructionsProcess import *
 from ElemetsInstance import *
-from unittest.mock import patch
-
+from io import StringIO
+import sys
 
 class MyTestCase(unittest.TestCase):
     def test_file(self):
@@ -13,7 +13,7 @@ class MyTestCase(unittest.TestCase):
         path = Path('test.txt')
         self.assertEqual(read_instructions_from_file(path), ['PROPAGATE 1 2 750','PROPAGATE 2 3 1250'])
         path = Path('nothing.txt')
-        self.assertEqual(read_instructions_from_file(path),None)
+        self.assertEqual(str(read_instructions_from_file(path)),"[Errno 2] No such file or directory: 'nothing.txt'")
 
     def test_the_conflicts(self):
         """Test the function of finding conflicts instructions."""
@@ -82,6 +82,11 @@ class MyTestCase(unittest.TestCase):
         #Testing if program can store the cancel instruction
         self.assertEqual(pro.situation[0].type, 'CANCEL')
         self.assertEqual(pro.situation[0].msg, 'ANOTHER HELP')
+    def test_File(self):
+        b = read_instructions_from_file('ABC')
+        self.assertEqual(str(b), "[Errno 2] No such file or directory: 'ABC'")
+
+
 
     def test_creation_devices(self):
         """Testing the device created successfully"""
@@ -361,6 +366,21 @@ class MyTestCase(unittest.TestCase):
         except SystemExit:
             self.assertEqual(a[0].situation[0].msg, 'First')
             self.assertEqual(a[0].situation[1].msg, 'Second')
+
+    def test_string_out(self):
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 1 Random 100',
+            'PROPAGATE 1 2 Random 10',
+            'CANCEL 1 Random 20'
+        ]
+        a, b = create_device(text_input)
+        try:
+            project1.running_program(text_input, a, b)
+        except SystemExit:
+            self.assertEqual(a[1].situation[0].msg, 'Random')
+
 
 
 if __name__ == '__main__':

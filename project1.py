@@ -124,7 +124,6 @@ def running_program(inst: list[str], device: list[Device], log_ins: int):
             if inst[log_ins].split(' ')[0] == 'PROPAGATE':
                 propagate_run += 1
                 # Send cancel/alert to the receiving device.
-                print("sending message")
                 org = inst[log_ins].split(' ')[1]
                 dest = inst[log_ins].split(' ')[2]
                 time_to_do = time_counter + int(inst[log_ins].split(' ')[-1])

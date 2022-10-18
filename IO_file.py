@@ -16,5 +16,5 @@ def read_instructions_from_file(path: Path) -> list[str]:
                 if line.split(' ')[0] == 'CANCEL' or line.split(' ')[0] == 'PROPAGATE' or line.split(' ')[0] == 'ALERT' or line.split(' ')[0] == 'DEVICE':
                     instruction.append(line.strip('\n'))
             return instruction
-    except FileNotFoundError:
-        pass
+    except Exception as e:
+        return e
