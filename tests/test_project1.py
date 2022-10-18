@@ -4,8 +4,8 @@ import project1
 from IO_file import read_instructions_from_file
 from InstructionsProcess import *
 from ElemetsInstance import *
-from io import StringIO
-import sys
+import io
+from contextlib import redirect_stdout
 
 class MyTestCase(unittest.TestCase):
     def test_file(self):
@@ -380,8 +380,24 @@ class MyTestCase(unittest.TestCase):
             project1.running_program(text_input, a, b)
         except SystemExit:
             self.assertEqual(a[1].situation[0].msg, 'Random')
+            self.assertEqual(a[0].situation, [])
 
-
+    def test_standard_output(self):
+        f = io.StringIO()
+        text_input = [
+            'DEVICE 1',
+            'DEVICE 2',
+            'ALERT 1 AnAlert 10',
+            'PROPAGATE 1 2 AnAlert 10'
+        ]
+        a, b = create_device(text_input)
+        with redirect_stdout(f):
+            try:
+                project1.running_program(text_input, a, b)
+            except SystemExit:
+                pass
+        output = f.getvalue()
+        self.assertEqual(output, '@11 #1: SENT ALERT TO #2: AnAlert\n@21 #2: RECEIVED ALERT FROM #1: AnAlert\n')
 
 if __name__ == '__main__':
     unittest.main()
