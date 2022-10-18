@@ -91,8 +91,8 @@ class MyTestCase(unittest.TestCase):
         ]
         out = project1.create_device(text_input)
         self.assertEqual(2, out[-1])
-        self.assertEqual(1, out[0][0]._ID)
-        self.assertEqual(22, out[0][1]._ID)
+        self.assertEqual(1, out[0][0]._id)
+        self.assertEqual(22, out[0][1]._id)
 
     def test_propagate(self):
         """Testing for receiving propagate"""
@@ -102,11 +102,11 @@ class MyTestCase(unittest.TestCase):
         device_input = [project1.Device(2), device_1]
         time_input = 10
         temp_input = [project1.Propagate(10, [can], 1, 2)]
-        with self.assertRaises(SystemExit) as c:
+        try:
             out = project1.check_if_propagate(temp_input, time_input, device_input)
+        except SystemExit:
             self.assertEqual(out[0].Situation[0].msg, 'HELP')
             self.assertEqual(out[0].Situation[0].type, 'CANCEL')
-        self.assertEqual(c.exception.code, None)
 
     def test_only_one(self):
         to_do_input = ['ALERT 1 ABC 100']

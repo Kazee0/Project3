@@ -21,7 +21,7 @@ class Device:
     """
 
     def __init__(self, id1):
-        self._ID = int(id1)
+        self._id = int(id1)
         self.situation = []
 
     def add_situation(self, sit):
@@ -45,7 +45,7 @@ class Device:
         """
         Returns the ID of the device
         """
-        return self._ID
+        return self._id
 
     def handle_cancel(self, msg):
         """
