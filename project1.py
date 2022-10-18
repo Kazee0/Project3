@@ -47,13 +47,11 @@ def only_one_instruction(to_do: list[str], device: list[Device]) -> list[Device]
     if to_do[0].split(' ')[0] == 'ALERT':
         for z in device:
             if z.show_id() == int(to_do[0].split(' ')[1]):
-                print('ALERT when single')
                 con = Situation('ALERT', to_do[0].split(' ')[-2])
                 z.add_situation(con)
     elif to_do[0].split(' ')[0] == 'CANCEL':
         for z in device:
             if z.show_id() == int(to_do[0].split(' ')[1]):
-                print('CANCEL when single ')
                 z.handle_cancel(to_do[0].split(' ')[-2])
     return device
 
@@ -81,10 +79,8 @@ def two_at_same_time(to_do: list[str], device: list[Device], reverse: bool) -> l
     else:
         for z in device:
             if z.show_id() == int(to_do[num_1].split(' ')[1]):
-                print('CANCEL')
                 z.handle_cancel(to_do[num_1].split(' ')[-2])
             if z.show_id() == int(to_do[num_2].split(' ')[1]):
-                print('ALERT')
                 con = Situation('ALERT', to_do[num_2].split(' ')[2])
                 z.add_situation(con)
     return device
